@@ -7,3 +7,5 @@ server/
 backup/
 config.py
 sftp-config.json
+*.sublime-project
+*.sublime-workspace

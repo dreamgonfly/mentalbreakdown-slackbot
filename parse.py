@@ -48,8 +48,8 @@ def parse_task(task):
         scheduled_raw = matched.group('scheduled')
         if scheduled_raw[-1] == 'd':
             day = int(scheduled_raw[:-1])
-            scheduled = datetime.now(pytz.utc) + timedelta(day)
-            scheduled = scheduled.replace(hour=0, minute=0, second=0, microsecond=0)
+            scheduled = datetime.now(TIMEZONE) + timedelta(day)
+            scheduled = scheduled.replace(hour=0, minute=0, second=0, microsecond=0).astimezone(pytz.utc)
         elif scheduled_raw[-1] == 'h':
             hour = int(scheduled_raw[:-1])
             scheduled = datetime.now(pytz.utc) + timedelta(hours = hour)
@@ -63,8 +63,8 @@ def parse_task(task):
         due_raw = matched.group('due')
         if due_raw[-1] == 'd':
             day = int(due_raw[:-1])
-            due = datetime.now(pytz.utc) + timedelta(day)
-            due = due.replace(hour=23, minute=59)
+            due = datetime.now(TIMEZONE) + timedelta(day)
+            due = due.replace(hour=23, minute=59).astimezone(pytz.utc)
         elif due_raw[-1] == 'h':
             hour = int(due_raw[:-1])
             due = datetime.now(pytz.utc) + timedelta(hours = hour)
