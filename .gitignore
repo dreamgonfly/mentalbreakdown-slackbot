@@ -1,0 +1,8 @@
+__pycache__/
+.DS_Store
+.ipynb_checkpoints/
+*.db
+sandbox/
+server/
+backup/
+config.py
