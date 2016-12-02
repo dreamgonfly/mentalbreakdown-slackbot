@@ -54,8 +54,8 @@ def complete(parsed_message):
 
 def listing(parsed_message):
     size = parsed_message['parsed']['size'] if 'size' in parsed_message['parsed'] else 5
-    tasks = active_tasks()[:size]
-    return '\n'.join([str(task) for task in tasks])
+    tasks = prioritize(active_tasks())[:size]
+    return '\n'.join([str(task)+' '+str(round(task.priority, 3)) for task in tasks])
 
 def delete(parsed_message):
     task = get_one(parsed_message)
