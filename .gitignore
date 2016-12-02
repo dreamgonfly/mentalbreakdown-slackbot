@@ -6,3 +6,4 @@ sandbox/
 server/
 backup/
 config.py
+sftp-config.json

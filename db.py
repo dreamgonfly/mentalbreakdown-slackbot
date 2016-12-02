@@ -2,7 +2,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from sqlalchemy import create_engine
 from datetime import datetime, timedelta
-from config import DB
+import pytz
+from config import DB, TIMEZONE
+
 Base = declarative_base()
 
 class Task(Base):
@@ -35,17 +37,19 @@ class Task(Base):
 	def __init__(self, *args, **kwargs):
 		Base.__init__(self, *args, **kwargs)
 		self.last_notnow = datetime.min
-		self.created_time = datetime.now()
-		self.last_updated_time = datetime.now()
+		self.created_time = datetime.now(pytz.utc)
+		self.last_updated_time = datetime.now(pytz.utc)
 
 	def __repr__(self):
-		def time_repr(t):
-			if not t:
+		def time_repr(t_utc):
+			print(t_utc)
+			if not t_utc:
 				return ''
-			now = datetime.now()
+			t = pytz.utc.localize(t_utc).astimezone(TIMEZONE)
+			now = datetime.now(TIMEZONE)
 			tomorrow = now + timedelta(1)
-			if t.strftime('%Y-%m-%d') == now.strftime('%Y-%m-%d'): day = 'today'
-			elif t.strftime('%Y-%m-%d') == tomorrow.strftime('%Y-%m-%d'): day = 'tomorrow'
+			if t.date() == now.date(): day = 'today'
+			elif t.date() == tomorrow.date(): day = 'tomorrow'
 			else: day = t.strftime('%b %d %A')
 
 			if t.strftime('%H:%M') == '23:59': time = None

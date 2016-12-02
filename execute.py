@@ -3,12 +3,13 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import or_
 from datetime import datetime, timedelta
 from priority import prioritize, pick_one
-from config import REFRESH_TIME
+import pytz
+from config import REFRESH_TIME, TIMEZONE
 Session = sessionmaker(bind=engine)
 session = Session()
 
 def active_tasks():
-    result = session.query(Task).filter_by(active=True).filter(or_(Task.scheduled == None, Task.scheduled < datetime.now())).all()
+    result = session.query(Task).filter_by(active=True).filter(or_(Task.scheduled == None, Task.scheduled < datetime.now(pytz.utc))).all()
     return result
 
 def get_one(parsed_message):
@@ -45,7 +46,7 @@ def create(parsed_message):
 def complete(parsed_message):
     task = get_one(parsed_message)
     task.completed = True
-    task.completed_time = datetime.now()
+    task.completed_time = datetime.now(pytz.utc)
     task.completed_ts = parsed_message['ts']
     task.active = False
     session.commit()
@@ -59,7 +60,7 @@ def listing(parsed_message):
 def delete(parsed_message):
     task = get_one(parsed_message)
     task.deleted = True
-    task.deleted_time = datetime.now()
+    task.deleted_time = datetime.now(pytz.utc)
     task.deleted_ts = parsed_message['ts']
     task.active = False
     session.commit()
@@ -67,24 +68,24 @@ def delete(parsed_message):
 
 def postpone(parsed_message):
     task = get_one(parsed_message)
-    if datetime.now() > REFRESH_TIME + task.last_notnow:
+    if datetime.now(pytz.utc) > REFRESH_TIME + task.last_notnow:
         task.num_notnow = 0
-    task.num_notnow +=1
-    task.last_notnow = datetime.now()
+    task.num_notnow += 1
+    task.last_notnow = datetime.now(pytz.utc)
     session.commit()
     return "Postponed : {task}".format(task=str(task))
 
 def top_hour(parsed_message):
-    now = datetime.now()
+    now = datetime.now(TIMEZONE)
     next_hour = now + timedelta(hours=1)
-    next_top_hour = datetime(next_hour.year, next_hour.month, next_hour.day, next_hour.hour)
+    next_top_hour = next_hour.replace(minute=0, second=0, microsecond=0)
     time_remaining = next_top_hour - now
     tasks_to_do = []; total_required_time = 0
     for task in prioritize(active_tasks()):
+        tasks_to_do.append(task)
         total_required_time += task.required_time
         if total_required_time * timedelta(minutes=30) > time_remaining:
             break
-        tasks_to_do.append(task)
     return '{} minutes remaining\n'.format(time_remaining.seconds//60) + '\n'.join([str(task) for task in tasks_to_do])
 
 from operator import attrgetter
@@ -96,7 +97,7 @@ def update(parsed_message):
     if 'required_time' in update_task: task.required_time = update_task['required_time']
     if 'scheduled' in update_task: task.scheduled = update_task['scheduled']
     if 'due' in update_task: task.due = update_task['due']
-    task.last_updated_time = datetime.now()
+    task.last_updated_time = datetime.now(pytz.utc)
     task.last_updated_ts = parsed_message['ts']
     task.raw_text = parsed_message['text']
     session.commit()
