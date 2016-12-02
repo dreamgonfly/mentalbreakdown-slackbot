@@ -15,7 +15,8 @@ def active_tasks():
 def get_one(parsed_message):
     if 'id' in parsed_message['parsed']:
         return session.query(Task).get(parsed_message['parsed']['id'])
-    else: return pick_one(active_tasks())
+    else: 
+        return session.query(Task).get(parsed_message['last_task_id'])
 
 def execute_command(parsed_message):
     executions = {'next': next_task,
@@ -30,7 +31,8 @@ def execute_command(parsed_message):
     return executions[parsed_message['parsed']['command']](parsed_message)
 
 def next_task(parsed_message):
-    return str(pick_one(active_tasks()))
+    task = pick_one(active_tasks())
+    return str(task), task
 
 def create(parsed_message):
     task = Task(**parsed_message['parsed']['task'])
@@ -41,7 +43,7 @@ def create(parsed_message):
     task.created_ts = parsed_message['ts']
     session.add(task)
     session.commit()
-    return "New task : {task}".format(task=str(task))
+    return "New task : {task}".format(task=str(task)), task
 
 def complete(parsed_message):
     task = get_one(parsed_message)
@@ -50,12 +52,12 @@ def complete(parsed_message):
     task.completed_ts = parsed_message['ts']
     task.active = False
     session.commit()
-    return "Completed : {task}".format(task=str(task))
+    return "Completed : {task}".format(task=str(task)), task
 
 def listing(parsed_message):
     size = parsed_message['parsed']['size'] if 'size' in parsed_message['parsed'] else 5
     tasks = prioritize(active_tasks())[:size]
-    return '\n'.join([str(task)+' '+str(round(task.priority, 3)) for task in tasks])
+    return '\n'.join([str(task)+' '+str(round(task.priority, 3)) for task in tasks]), tasks[0]
 
 def delete(parsed_message):
     task = get_one(parsed_message)
@@ -64,7 +66,7 @@ def delete(parsed_message):
     task.deleted_ts = parsed_message['ts']
     task.active = False
     session.commit()
-    return "Deleted : {task}".format(task=str(task))
+    return "Deleted : {task}".format(task=str(task)), task
 
 def postpone(parsed_message):
     task = get_one(parsed_message)
@@ -73,7 +75,7 @@ def postpone(parsed_message):
     task.num_notnow += 1
     task.last_notnow = datetime.now(pytz.utc)
     session.commit()
-    return "Postponed : {task}".format(task=str(task))
+    return "Postponed : {task}".format(task=str(task)), task
 
 def top_hour(parsed_message):
     now = datetime.now(TIMEZONE)
@@ -86,7 +88,7 @@ def top_hour(parsed_message):
         total_required_time += task.required_time
         if total_required_time * timedelta(minutes=30) > time_remaining:
             break
-    return '{} minutes remaining\n'.format(time_remaining.seconds//60) + '\n'.join([str(task) for task in tasks_to_do])
+    return '{} minutes remaining\n'.format(time_remaining.seconds//60) + '\n'.join([str(task) for task in tasks_to_do]), tasks_to_do[0]
 
 from operator import attrgetter
 def update(parsed_message):
@@ -101,4 +103,4 @@ def update(parsed_message):
     task.last_updated_ts = parsed_message['ts']
     task.raw_text = parsed_message['text']
     session.commit()
-    return "Updated : {task}".format(task=str(task))
+    return "Updated : {task}".format(task=str(task)), task

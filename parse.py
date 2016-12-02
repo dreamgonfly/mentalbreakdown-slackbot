@@ -132,3 +132,10 @@ def parse_message(message):
         
     message['parsed'] = parsed
     return message
+
+def preprocess(parsed_message, last_task):
+    if last_task:
+        parsed_message['last_task_id'] = last_task.task_id
+    else:
+        parsed_message['last_task_id'] = None
+    return parsed_message
