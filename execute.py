@@ -84,10 +84,11 @@ def top_hour(parsed_message):
     time_remaining = next_top_hour - now
     tasks_to_do = []; total_required_time = 0
     for task in prioritize(active_tasks()):
-        tasks_to_do.append(task)
         total_required_time += task.required_time
         if total_required_time * timedelta(minutes=30) > time_remaining:
+            tasks_to_do.append(task)
             break
+        tasks_to_do.append(task)
     return '{} minutes remaining\n'.format(time_remaining.seconds//60) + '\n'.join([str(task) for task in tasks_to_do]), tasks_to_do[0]
 
 from operator import attrgetter
