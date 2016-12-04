@@ -59,7 +59,7 @@ class Task(Base):
 		if not self.scheduled and not self.due:
 			return '({self.task_id}) {self.content} *{self.required_time}*'.format(self=self)
 		else:
-			return '({self.task_id}) {self.content} *{self.required_time}*{scheduled} ~{due}'.format(self=self, 
+			return '({self.task_id}) {self.content} *{self.required_time}* {scheduled}~{due}'.format(self=self, 
 				scheduled=time_repr(self.scheduled),
 				due=time_repr(self.due))
 			
