@@ -55,8 +55,9 @@ u_id = re.compile(r'^u +(?P<id>\d{1,3}) +(?P<task>.*)$', re.I)
 def parse_task(task):
     parsed = {}
     match_dict = matching(task)
-    parsed['content'] = match_dick['content']
-    if match_dict['required_time']:
+    if 'content' in match_dict and match_dict['content']:
+        parsed['content'] = match_dict['content']
+    if 'required_time' in match_dict and match_dict['required_time']:
         parsed['required_time'] = int(match_dict['required_time'])
     if match_dict['scheduled']:
         scheduled_raw = match_dict['scheduled']
@@ -70,6 +71,14 @@ def parse_task(task):
         elif scheduled_raw.endswith('m'):
             minute = int(scheduled_raw[:-1])
             scheduled = datetime.now(pytz.utc) + timedelta(minutes = minute)
+        elif scheduled_raw in ['today', 'tdy']:
+            scheduled = datetime.now(TIMEZONE)
+            scheduled = scheduled.replace(hour=0, minute=0, second=0, microsecond=0).astimezone(pytz.utc)
+        elif scheduled_raw in ['tomorrow', 'tmr']:
+            scheduled = datetime.now(TIMEZONE) + timedelta(1)
+            scheduled = scheduled.replace(hour=0, minute=0, second=0, microsecond=0).astimezone(pytz.utc)
+        elif scheduled_raw == 'x':
+            scheduled = None
         else:
             scheduled = TIMEZONE.localize(parse(scheduled_raw)).astimezone(pytz.utc)
         parsed['scheduled'] = scheduled
@@ -85,6 +94,13 @@ def parse_task(task):
         elif due_raw.endswith('m'):
             minute = int(due_raw[:-1])
             due = datetime.now(pytz.utc) + timedelta(minutes = minute)
+        elif due_raw in ['today', 'tdy']:
+            due = datetime.now(TIMEZONE).replace(hour=23, minute=59, second=0, microsecond=0).astimezone(pytz.utc)
+        elif due_raw in ['tomorrow', 'tmr']:
+            due = datetime.now(TIMEZONE) + timedelta(1)
+            due = due.replace(hour=23, minute=59, second=0, microsecond=0).astimezone(pytz.utc)
+        elif due_raw == 'x':
+            due = None
         else:
             due = TIMEZONE.localize(parse(due_raw))
             if due.hour == 0 and due.minute == 0:
