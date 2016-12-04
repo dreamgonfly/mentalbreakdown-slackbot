@@ -56,18 +56,12 @@ class Task(Base):
 			else: time = t.strftime('%H:%M')
 			return day + ' ' + time if time else day
 
-		def time_padding(t_utc):
-			timestring = time_repr(t_utc)
-			if timestring:
-				return ' ' + timestring
-			else: return timestring
-
 		if not self.scheduled and not self.due:
 			return '({self.task_id}) {self.content} *{self.required_time}*'.format(self=self)
 		else:
 			return '({self.task_id}) {self.content} *{self.required_time}*{scheduled} ~{due}'.format(self=self, 
-				scheduled=time_padding(self.scheduled),
-				due=time_padding(self.due))
+				scheduled=time_repr(self.scheduled),
+				due=time_repr(self.due))
 			
 	# @staticmethod
 	# def active_tasks():
