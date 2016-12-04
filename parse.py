@@ -118,7 +118,7 @@ def parse_message(message):
     elif c.match(cleaned): parsed['command'] = 'complete'
     elif c_id.match(cleaned): parsed['command'] = 'complete'; parsed['id'] = int(c_id.match(cleaned).group('id'))
     elif pp.match(cleaned): parsed['command'] = 'postpone'
-    elif pp_id.match(cleaned): parsed['command'] = 'postpone'; parsed['id'] = int(c_id.match(cleaned).group('id'))
+    elif pp_id.match(cleaned): parsed['command'] = 'postpone'; parsed['id'] = int(pp_id.match(cleaned).group('id'))
     elif l.match(cleaned): parsed['command'] = 'list'
     elif l_size.match(cleaned): parsed['command'] = 'list'; parsed['size'] = int(l_size.match(cleaned).group('size'))
     elif z.match(cleaned): parsed['command'] = 'cancel'

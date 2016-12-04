@@ -70,7 +70,7 @@ def delete(parsed_message):
 
 def postpone(parsed_message):
     task = get_one(parsed_message)
-    if datetime.now(pytz.utc) > REFRESH_TIME + task.last_notnow:
+    if datetime.now(pytz.utc) > REFRESH_TIME + task.last_notnow.replace(tzinfo=pytz.utc):
         task.num_notnow = 0
     task.num_notnow += 1
     task.last_notnow = datetime.now(pytz.utc)
