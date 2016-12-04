@@ -11,12 +11,17 @@ if slack_client.rtm_connect():
     while True:
         filtered = filter(filter_message, slack_client.rtm_read())
         for message in filtered:
-            print('message :', message)
-            parsed_message = parse_message(message)
-            parsed_message = preprocess(parsed_message, last_task)
-            print('parsed message :', parsed_message)
-            response, last_task = execute_command(parsed_message)
-            print('response :', response)
+            if message['text'] == '닫혀라 참깨': assert False
+            try:
+                print('message :', message)
+                parsed_message = parse_message(message)
+                parsed_message = preprocess(parsed_message, last_task)
+                print('parsed message :', parsed_message)
+                response, last_task = execute_command(parsed_message)
+                print('response :', response)
+            except Exception as e:
+                print(e)
+                response = "Sorry, I didn't quite get that. Type 'help' for instruction."
             slack_client.rtm_send_message(message['channel'], response)
         time.sleep(READ_WEBSOCKET_DELAY)
 else:
